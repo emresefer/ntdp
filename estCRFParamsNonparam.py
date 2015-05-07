@@ -352,10 +352,10 @@ def iterativeRunner(marklist,domlist,sortmarkers,varcount,nodecounts,params):
         #if ind == 0 and curobjval > solobjval:
         #   break
         ind += 1
-        if ind == 1:
-           solx = np.array(cursolx)
-           solobjval = curobjval
-           break
+        #if ind == 1:
+        #   solx = np.array(cursolx)
+        #   solobjval = curobjval
+        #   break
         curobjval -= estPenaltyNonparam(cursolx,muvec,len(sortmarkers),params["basecount"],params["width"],params["lambda"])
         assert curobjval >= 0.0
         muvec = estMuVecNonparam(cursolx,sortmarkers,varcount,params["basecount"],params["width"])
