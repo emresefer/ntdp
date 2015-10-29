@@ -637,8 +637,8 @@ def makeParser():
     """
     """
     parser = argparse.ArgumentParser(description='Process domain estimation parameters')
-    parser.add_argument('-m', dest='markerpath', type=str, action='store', default='marker.marker', help='Marker File(default: marker.marker)')
-    parser.add_argument('-p', dest='parampath', type=str, action='store', default='param.params', help='Parameter File(default: param.params)')
+    parser.add_argument('-m', dest='markerpath', type=str, action='store', default='test.marks', help='Marker File(default: test.marks)')
+    parser.add_argument('-p', dest='parampath', type=str, action='store', default='params.params', help='Parameter File(default: params.params)')
     parser.add_argument('-o', dest='outprefix', type=str, action='store', default='freq', help='output prefix(default: freq)')
     parser.add_argument('-n', dest='nodecount', type=int, action='store', default=100, help='number of nodes(default: max one in marker data)')
     parser.add_argument('-d', dest='priordist', type=str, action='store', default=None, help='distribution(default: None)')

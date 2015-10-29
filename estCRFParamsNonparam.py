@@ -256,7 +256,7 @@ def trainCRF(infodict,loginfodict,lincoefs,regcoefs,marklist,domlist,sortmarkers
     initx = np.zeros((varcount,),dtype=np.float64) if initx == None else initx
     markcount = len(sortmarkers)
     def jacloglikeCRF(paramx):
-        """jacobian
+        """jacobian of log likelihood
         Args:
            paramx: 
         """
@@ -296,9 +296,7 @@ def trainCRF(infodict,loginfodict,lincoefs,regcoefs,marklist,domlist,sortmarkers
         #        sideval += (np.linalg.norm(usex)**2)/muvec[uind,mind]
         #        sideval += np.dot(np.dot(usex,regcoefs),usex)
         #tobjval += params["lambda"]*sideval
-        print "crf obj: ",tobjval
-        if random.random() < 0.2:
-           print ",".join([str(item) for item in list(paramx)])
+        print "current obj: ",tobjval
         if TESTMODE:
            for item in normlist:
                assert item != 0.0   
@@ -336,6 +334,12 @@ def loglikeEst(paramx,lincoefs,marklist,infodict,nodecounts,regcoefs,sortmarkers
         
 def iterativeRunner(marklist,domlist,sortmarkers,varcount,nodecounts,params):
     """iterative runner
+    Args:
+       marklist,domlist:
+       sortmarkers:
+       varcount,nodecounts:
+       params:
+    Returns:
     """
     muvec = np.zeros((3,len(sortmarkers)),dtype=np.float)
     for tind in xrange(3):
@@ -363,7 +367,7 @@ def iterativeRunner(marklist,domlist,sortmarkers,varcount,nodecounts,params):
         testtobjval = loglikeEst(cursolx,lincoefs,marklist,infodict,nodecounts,regcoefs,sortmarkers,params,muvec)
         assert abs(testtobjval - curobjval) < 0.1
         if curobjval >= solobjval - 0.01:
-           break    
+           break
         solobjval,solx = curobjval, np.array(cursolx)
     return solx,solobjval,muvec
      
@@ -441,6 +445,9 @@ def getVarcount(markcount,width,basecount):
 
 def checkParamsNonParam(params):
     """checks params of nonparametric case
+    Args:
+       params:
+    Returns:    
     """
     assert params['prepromodel'] in ["linear","loglinear","binary","binary0.5","colnorm","poisson0.9","poisson0.99"] and params['width']>=1 and params['itercount']>=4
     return True
@@ -485,9 +492,9 @@ def runner(marklist,domainlist,nodecounts,outprefix,params):
     """
     assert checkParamsNonParam(params)
     marklist = HistoneUtilities.modifyMarkerData(marklist,nodecounts,params['prepromodel'],False)
-    marklist = normBernstein(marklist)
+    #marklist = normBernstein(marklist)
     sortmarkers = sorted(list(set(mark for markinfo in marklist for mark in markinfo.keys())))
-    print "used markers are: ",sortmarkers
+    print "input markers are: ",sortmarkers
     markcount = len(sortmarkers)
     stime = time.time()
     varcount = getVarcount(markcount,params['width'],params['basecount'])
@@ -512,16 +519,19 @@ def runner(marklist,domainlist,nodecounts,outprefix,params):
 def makeParser():
     """
     """
-    parser = argparse.ArgumentParser(description='CRF parameter estimation')
-    parser.add_argument('-m', dest='markerpath', type=str, action='store', default='markers.marker', help='Marker File(default: markers.marker)')
-    parser.add_argument('-p', dest='domainpath', type=str, action='store', default='domains.domain', help='List of domains File(default: domains.domain)')
+    parser = argparse.ArgumentParser(description='Parameter estimation')
+    parser.add_argument('-m', dest='markerpath', type=str, action='store', default='train.marklist', help='Marker File(default: train.marklist)')
+    parser.add_argument('-p', dest='domainpath', type=str, action='store', default='train.domainlist', help='List of domains File(default: train.domainlist)')
     parser.add_argument('-o', dest='outprefix', type=str, action='store', default='freq', help='output prefix(default: freq)')
     parser.add_argument('-l1', dest='lambdaval', type=float, action='store', default=0.0, help = 'smoothness parameter')
     parser.add_argument('-l2', dest='grlambdaval', type=float, action='store', default=1.0, help = 'lambda for coefficient sparsity')
     parser.add_argument('-w', dest='width', type=int, action='store', default=1, help='effect width(default: 1)')
     parser.add_argument('-t', dest='prepromodel', type=str, action='store', default='loglinear', help='preprocess model(default: loglinear)')
     parser.add_argument('-c', dest='itercount', type=int, action='store', default=1000, help='iteration count(default: 1000)')
-    parser.add_argument('-k', dest='basecount', type=int, action='store', default=10, help='# of base kernels(default: 10)')
+    parser.add_argument('-k', dest='basecount', type=int, action='store', default=1, help='# of base kernels(default: 1)')
+    parser.add_argument('-cb', dest='cb', type=float, action='store', default=1.0, help='relative weight of boundary(default: 1.0)')
+    parser.add_argument('-ci', dest='ci', type=float, action='store', default=1.0, help='relative weight of interior(default: 1.0)')
+    parser.add_argument('-ce', dest='ce', type=float, action='store', default=1.0, help='relative weight of external(default: 1.0)')
     return parser
 
 
@@ -534,7 +544,7 @@ if  __name__ =='__main__':
     globals().update(vars(args))
     marklist = HistoneUtilities.readMarkerFile(markerpath)
     domlist,nodecounts = HistoneUtilities.readMultiDomainFile(domainpath)
-    params = {'lambda':lambdaval,'grlambda':grlambdaval,'itercount':itercount, "width":width, "prepromodel":prepromodel,'basecount':basecount}
+    params = {'lambda':lambdaval,'grlambda':grlambdaval,'itercount':itercount, "width":width, "prepromodel":prepromodel,'basecount':basecount,'ci':ci,'ce':ce,'cb':cb}
     runner(marklist,domlist,nodecounts,outprefix,params)
 
     
